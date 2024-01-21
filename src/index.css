@@ -1,0 +1,91 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities{
+    .space-between {
+        justify-content: space-between;
+    }
+
+    .link{
+        @apply hover:text-slate-500 transition-all;
+    }
+    
+    .button-1{
+        @apply text-white px-3 py-2 font-bold rounded-md text-2xl
+    }
+
+    .button-2{
+        @apply text-white px-5 py-4 font-bold rounded-md text-3xl
+    }
+
+    .button-3{
+        @apply p-2 py-2 font-bold rounded-md border
+    }
+
+    .button-4{
+        @apply text-white px-3 py-2 font-bold rounded-md text-xl
+    }
+
+    .button-transition{
+        @apply hover:bg-cyan-600 transition-all;
+    }
+
+    .button-transition-2{
+        @apply hover:bg-red-700 transition-all;
+    }
+
+    .card{
+        @apply green-option-2 border p-12 rounded-md shadow-md mb-3;
+    }
+
+    .card-tittle{
+        @apply uppercase font-bold text-xl gray-text mb-4;
+    }
+
+    .card-description{
+        @apply font-semibold text-base gray-text;
+    }
+
+    .cyan-option-1{
+        background-color: #00BFBA;
+    }
+
+    .green-option-1{
+        background-color: #4DDBAE;
+    }
+
+    .green-option-2{
+        background-color: #F8FFFF;
+    }
+
+    .gray-text{
+        color: #4C4C4C;
+    }
+
+    .gray-text-2{
+        color: #989898;
+    }
+
+    .overlay{
+        @apply flex w-full h-screen fixed top-0 left-0 p-40 items-center justify-center;
+    }
+
+    .close-icon{
+        @apply absolute text-2xl w-8 text-center top-16 right-16 cursor-pointer transition-all rounded-sm hover:green-option-1;
+    }
+
+    .glass{
+        background: rgba( 255, 255, 255, 0.5 );
+        box-shadow: 0 8px 32px 0 rgba( 31, 38, 135, 0.37 );
+        backdrop-filter: blur( 7px );
+        -webkit-backdrop-filter: blur( 7px );
+        border-radius: 10px;
+        border: 1px solid rgba( 255, 255, 255, 0.18 );
+    }
+
+    .clip-path{
+        clip-path: polygon(0% 10%, 100% 0%, 100% 100%, 0% 100%);
+    }
+}
+
