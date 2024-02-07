@@ -8,8 +8,18 @@ export const ToolBar = () => {
       </div>
 
       <nav className="md:flex gap-4 md:items-center font-semibold gray-text text-xl">
-        <a href="">Donaciones</a>
-        <a href="">Exportar</a>
+        {/* <a
+          className="text-xl gray-text font-bold hover:gray-text transition-colors duration-150 cursor-pointer"
+          href=""
+        >
+          Donaciones
+        </a> */}
+        <a
+          className="text-xl gray-text font-bold hover:gray-text-2 transition-colors duration-150 cursor-pointer"
+          href=""
+        >
+          Exportar
+        </a>
       </nav>
     </div>
   );
