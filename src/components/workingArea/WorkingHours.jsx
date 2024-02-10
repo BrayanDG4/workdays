@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
+import { ContextMenu } from "./contextMenu/ContextMenu";
 
 export const WorkingHours = ({ week }) => {
   const { number, users: initialUsers } = week;
   const [users, setUsers] = useState(initialUsers);
   const [newUserName, setNewUserName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState(new Set());
+  const pastelColors = ["#FFD8BE", "#C1E3FF", "#FFD3F2", "#E4FFC1", "#FFECB3"];
+  const [cellColors, setCellColors] = useState({});
+  const [contextMenuVisible, setContextMenuVisible] = useState(false);
+  const [contextMenuPosition, setContextMenuPosition] = useState({
+    x: 0,
+    y: 0,
+  });
 
   useEffect(() => {
-    // Almacenar en localStorage cuando cambia la lista de usuarios
     localStorage.setItem("userList", JSON.stringify(getFullUserList()));
   }, [users]);
 
@@ -59,14 +66,14 @@ export const WorkingHours = ({ week }) => {
 
     setUsers((prevUsers) => [...prevUsers, newUser]);
     setNewUserName("");
-    handleSaveToLocal(); // Guardar en el localStorage al agregar un usuario
+    handleSaveToLocal();
   };
 
   const handleClearSchedule = () => {
     const updatedUsers = users.filter((user) => !selectedUsers.has(user.id));
     setUsers(updatedUsers);
     setSelectedUsers(new Set());
-    handleSaveToLocal(); // Guardar en el localStorage al limpiar el horario
+    handleSaveToLocal();
   };
 
   const handleSelectUser = (userId) => {
@@ -79,6 +86,17 @@ export const WorkingHours = ({ week }) => {
       }
       return newSelection;
     });
+  };
+
+  const handleContextMenu = (event, userId, day) => {
+    event.preventDefault();
+    setContextMenuPosition({ x: event.clientX, y: event.clientY });
+    setContextMenuVisible(true);
+  };
+
+  const handleColorSelect = (color) => {
+    // Aquí puedes implementar la lógica para asignar el color a la celda seleccionada
+    console.log("Color seleccionado:", color);
   };
 
   const handleSelectAll = () => {
@@ -156,108 +174,74 @@ export const WorkingHours = ({ week }) => {
               key={user.id}
               className="text-center gray-text font-semibold text-lg bg-white"
             >
-              <td>
-                <div className="flex items-center gap-3 m-2">
+              <td className="flex items-center gap-3 m-2">
+                <input
+                  className={`appearance-none h-6 w-10 rounded-md ${
+                    selectedUsers.has(user.id) ? "bg-blue-500" : "bg-[#D9D9D9]"
+                  } checked:border-transparent focus:outline-none`}
+                  type="checkbox"
+                  checked={selectedUsers.has(user.id)}
+                  onChange={() => handleSelectUser(user.id)}
+                />
+                <div className="flex flex-col flex-grow">
                   <input
-                    className={`appearance-none h-6 w-10 rounded-md ${
-                      selectedUsers.has(user.id)
-                        ? "bg-blue-500"
-                        : "bg-[#D9D9D9]"
-                    } checked:border-transparent focus:outline-none`}
-                    type="checkbox"
-                    checked={selectedUsers.has(user.id)}
-                    onChange={() => handleSelectUser(user.id)}
+                    type="text"
+                    value={user.name}
+                    onChange={(e) => handleNameChange(user.id, e.target.value)}
+                    onBlur={handleSaveToLocal}
+                    className="gray-text font-bold w-full truncate"
+                    style={{ overflow: "hidden", textOverflow: "ellipsis" }}
                   />
-                  <div className="flex flex-col">
-                    <input
-                      type="text"
-                      value={user.name}
-                      onChange={(e) =>
-                        handleNameChange(user.id, e.target.value)
-                      }
-                      onBlur={handleSaveToLocal}
-                      className="gray-text font-bold w-full"
-                    />
-                    <p className="text-sm font-normal gray-text text-left">
-                      Horas
-                    </p>
-                  </div>
+                  <p className="text-sm font-normal gray-text text-left">
+                    Horas
+                  </p>
                 </div>
               </td>
-              <td className="bg-[#D2E3F0] border-t-8 border-[#9AC5E8] w-[10%]">
-                <input
-                  type="text"
-                  value={user.schedule.Monday}
-                  onChange={(e) =>
-                    handleScheduleChange(user.id, "Monday", e.target.value)
-                  }
-                  className="border-none bg-[#D2E3F0] text-center w-full"
-                />
-              </td>
-              <td className="bg-[#D2E3F0] border-t-8 border-[#9AC5E8] w-[10%]">
-                <input
-                  type="text"
-                  value={user.schedule.Tuesday}
-                  onChange={(e) =>
-                    handleScheduleChange(user.id, "Tuesday", e.target.value)
-                  }
-                  className="border-none bg-[#D2E3F0] text-center w-full"
-                />
-              </td>
-              <td className="bg-[#D2E3F0] border-t-8 border-[#9AC5E8] w-[10%]">
-                <input
-                  type="text"
-                  value={user.schedule.Wednesday}
-                  onChange={(e) =>
-                    handleScheduleChange(user.id, "Wednesday", e.target.value)
-                  }
-                  className="border-none bg-[#D2E3F0] text-center w-full"
-                />
-              </td>
-              <td className="bg-[#D2E3F0] border-t-8 border-[#9AC5E8] w-[10%]">
-                <input
-                  type="text"
-                  value={user.schedule.Thursday}
-                  onChange={(e) =>
-                    handleScheduleChange(user.id, "Thursday", e.target.value)
-                  }
-                  className="border-none bg-[#D2E3F0] text-center w-full"
-                />
-              </td>
-              <td className="bg-[#D2E3F0] border-t-8 border-[#9AC5E8] w-[10%]">
-                <input
-                  type="text"
-                  value={user.schedule.Friday}
-                  onChange={(e) =>
-                    handleScheduleChange(user.id, "Friday", e.target.value)
-                  }
-                  className="border-none bg-[#D2E3F0] text-center w-full"
-                />
-              </td>
-              <td className="bg-[#D2E3F0] border-t-8 border-[#9AC5E8] w-[10%]">
-                <input
-                  type="text"
-                  value={user.schedule.Saturday}
-                  onChange={(e) =>
-                    handleScheduleChange(user.id, "Saturday", e.target.value)
-                  }
-                  className="border-none bg-[#D2E3F0] text-center w-full"
-                />
-              </td>
-              <td className="bg-[#D2E3F0] border-t-8 border-[#9AC5E8] w-[10%]">
-                <input
-                  type="text"
-                  value={user.schedule.Sunday}
-                  onChange={(e) =>
-                    handleScheduleChange(user.id, "Sunday", e.target.value)
-                  }
-                  className="border-none bg-[#D2E3F0] text-center w-full"
-                />
-              </td>
+              {Object.keys(user.schedule).map((day) => {
+                const cellKey = `${user.id}_${day}`;
+                const backgroundColor = cellColors[cellKey] || "#D2E3F0";
+
+                return (
+                  <td
+                    key={day}
+                    className="bg-[#D2E3F0] border-t-8 border-[#9AC5E8]"
+                    style={{ backgroundColor }}
+                    onContextMenu={(event) =>
+                      handleContextMenu(event, user.id, day)
+                    }
+                  >
+                    <textarea
+                      value={user.schedule[day]}
+                      onChange={(e) =>
+                        handleScheduleChange(user.id, day, e.target.value)
+                      }
+                      className="mx-1 border-none bg-[#D2E3F0] text-center w-full resize-none"
+                      style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        lineHeight: "1.5",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                    />
+                  </td>
+                );
+              })}
             </tr>
           ))}
         </tbody>
       </table>
+
+      {/* Menú contextual */}
+      <ContextMenu
+        visible={contextMenuVisible}
+        x={contextMenuPosition.x}
+        y={contextMenuPosition.y}
+        onClose={() => setContextMenuVisible(false)}
+        onSelectColor={handleColorSelect}
+        colors={pastelColors}
+      />
     </>
   );
 };

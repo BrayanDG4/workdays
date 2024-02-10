@@ -1,9 +1,49 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ToolBar } from "./ToolBar";
 import { WorkingHours } from "./WorkingHours";
 
 export const WorkingArea = () => {
   const [weeks, setWeeks] = useState([]);
+
+  useEffect(() => {
+    // Al cargar el componente, verifica si hay datos en el localStorage
+    const storedData = JSON.parse(localStorage.getItem("userList")) || {};
+    if (Object.keys(storedData).length > 0) {
+      // Si hay datos, establece las semanas del estado con los datos del localStorage
+      const savedWeeks = Object.entries(storedData).map(([number, users]) => ({
+        number: parseInt(number),
+        users,
+      }));
+      setWeeks(savedWeeks);
+    } else {
+      // Si no hay datos en el localStorage, crea una semana por defecto
+      const defaultWeek = {
+        number: 1,
+        users: [
+          {
+            id: "1",
+            name: "Usuario 1",
+            schedule: {
+              Monday: "8:00 AM - 5:00 PM",
+              Tuesday: "8:00 AM - 5:00 PM",
+              Wednesday: "8:00 AM - 5:00 PM",
+              Thursday: "8:00 AM - 5:00 PM",
+              Friday: "8:00 AM - 5:00 PM",
+              Saturday: "Off",
+              Sunday: "Off",
+            },
+          },
+          // Agrega más usuarios o datos según sea necesario
+        ],
+      };
+      setWeeks([defaultWeek]);
+      // Guarda la semana por defecto en el localStorage
+      localStorage.setItem(
+        "userList",
+        JSON.stringify({ 1: defaultWeek.users })
+      );
+    }
+  }, []);
 
   const handleAddWeek = () => {
     // Calcula el número de la nueva semana
