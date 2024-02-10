@@ -7,13 +7,15 @@ export const WorkingHours = ({ week }) => {
   const [users, setUsers] = useState(initialUsers);
   const [newUserName, setNewUserName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState(new Set());
-  const pastelColors = ["#FFD8BE", "#C1E3FF", "#FFD3F2", "#E4FFC1", "#FFECB3"];
+  const pastelColors = ["#FFD8BE", "#D2E3F0", "#FFD3F2", "#E4FFC1", "#FFECB3"];
   const [cellColors, setCellColors] = useState({});
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
     y: 0,
   });
+
+  const [selectedColor, setSelectedColor] = useState("#D2E3F0"); // Color por defecto
 
   useEffect(() => {
     localStorage.setItem("userList", JSON.stringify(getFullUserList()));
@@ -97,6 +99,8 @@ export const WorkingHours = ({ week }) => {
   const handleColorSelect = (color) => {
     // Aquí puedes implementar la lógica para asignar el color a la celda seleccionada
     console.log("Color seleccionado:", color);
+    setSelectedColor(color);
+    console.log(selectedColor);
   };
 
   const handleSelectAll = () => {
@@ -199,13 +203,13 @@ export const WorkingHours = ({ week }) => {
               </td>
               {Object.keys(user.schedule).map((day) => {
                 const cellKey = `${user.id}_${day}`;
-                const backgroundColor = cellColors[cellKey] || "#D2E3F0";
+                const cellBackgroundColor = selectedColor; // Usar el color seleccionado o el color por defecto
 
                 return (
                   <td
                     key={day}
-                    className="bg-[#D2E3F0] border-t-8 border-[#9AC5E8]"
-                    style={{ backgroundColor }}
+                    className={`border-t-8 border-[${selectedColor}]`}
+                    style={{ backgroundColor: cellBackgroundColor }} // Aplicar el color seleccionado o el color por defecto
                     onContextMenu={(event) =>
                       handleContextMenu(event, user.id, day)
                     }
@@ -215,7 +219,7 @@ export const WorkingHours = ({ week }) => {
                       onChange={(e) =>
                         handleScheduleChange(user.id, day, e.target.value)
                       }
-                      className="mx-1 border-none bg-[#D2E3F0] text-center w-full resize-none"
+                      className={`mx-1 border-none bg-[${selectedColor}] text-center w-full resize-none`}
                       style={{
                         overflow: "hidden",
                         textOverflow: "ellipsis",
@@ -223,6 +227,7 @@ export const WorkingHours = ({ week }) => {
                         height: "100%",
                         display: "flex",
                         alignItems: "center",
+                        backgroundColor: selectedColor, // Aplicar el color seleccionado al fondo del textarea
                       }}
                     />
                   </td>
