@@ -8,14 +8,14 @@ export const WorkingHours = ({ week }) => {
   const [newUserName, setNewUserName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState(new Set());
   const pastelColors = ["#FFD8BE", "#D2E3F0", "#FFD3F2", "#E4FFC1", "#FFECB3"];
-  const [cellColors, setCellColors] = useState({});
+  const [rowColors, setRowColors] = useState({}); // Almacenar los colores de fila para cada usuario
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
     y: 0,
   });
-
-  const [selectedColor, setSelectedColor] = useState("#D2E3F0"); // Color por defecto
+  const [selectedUserForContextMenu, setSelectedUserForContextMenu] =
+    useState(null);
 
   useEffect(() => {
     localStorage.setItem("userList", JSON.stringify(getFullUserList()));
@@ -92,15 +92,21 @@ export const WorkingHours = ({ week }) => {
 
   const handleContextMenu = (event, userId, day) => {
     event.preventDefault();
-    setContextMenuPosition({ x: event.clientX, y: event.clientY });
-    setContextMenuVisible(true);
+    // Verificar si el evento proviene de una celda que contiene las horas
+    if (event.target.tagName.toLowerCase() === "textarea") {
+      setContextMenuPosition({ x: event.clientX, y: event.clientY });
+      setContextMenuVisible(true);
+      setSelectedUserForContextMenu(userId);
+    }
   };
 
   const handleColorSelect = (color) => {
-    // Aquí puedes implementar la lógica para asignar el color a la celda seleccionada
-    console.log("Color seleccionado:", color);
-    setSelectedColor(color);
-    console.log(selectedColor);
+    // Actualizar el color de fila para el usuario seleccionado
+    setRowColors((prevRowColors) => ({
+      ...prevRowColors,
+      [selectedUserForContextMenu]: color,
+    }));
+    setContextMenuVisible(false); // Cerrar el menú contextual después de seleccionar un color
   };
 
   const handleSelectAll = () => {
@@ -201,38 +207,36 @@ export const WorkingHours = ({ week }) => {
                   </p>
                 </div>
               </td>
-              {Object.keys(user.schedule).map((day) => {
-                const cellKey = `${user.id}_${day}`;
-                const cellBackgroundColor = selectedColor; // Usar el color seleccionado o el color por defecto
-
-                return (
-                  <td
-                    key={day}
-                    className={`border-t-8 border-[${selectedColor}]`}
-                    style={{ backgroundColor: cellBackgroundColor }} // Aplicar el color seleccionado o el color por defecto
-                    onContextMenu={(event) =>
-                      handleContextMenu(event, user.id, day)
+              {Object.keys(user.schedule).map((day) => (
+                <td
+                  key={day}
+                  className={`border-t-8`}
+                  style={{
+                    backgroundColor: rowColors[user.id] || "#D2E3F0",
+                    borderTop: rowColors[user.id] || "#D2E3F0",
+                  }}
+                  onContextMenu={(event) =>
+                    handleContextMenu(event, user.id, day)
+                  }
+                >
+                  <textarea
+                    value={user.schedule[day]}
+                    onChange={(e) =>
+                      handleScheduleChange(user.id, day, e.target.value)
                     }
-                  >
-                    <textarea
-                      value={user.schedule[day]}
-                      onChange={(e) =>
-                        handleScheduleChange(user.id, day, e.target.value)
-                      }
-                      className={`mx-1 border-none bg-[${selectedColor}] text-center w-full resize-none`}
-                      style={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        lineHeight: "1.5",
-                        height: "100%",
-                        display: "flex",
-                        alignItems: "center",
-                        backgroundColor: selectedColor, // Aplicar el color seleccionado al fondo del textarea
-                      }}
-                    />
-                  </td>
-                );
-              })}
+                    className={`border-none text-center w-full resize-none`}
+                    style={{
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      lineHeight: "1.5",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      backgroundColor: rowColors[user.id] || "#D2E3F0", // Aplicar el color almacenado en el estado rowColors
+                    }}
+                  />
+                </td>
+              ))}
             </tr>
           ))}
         </tbody>
@@ -245,6 +249,7 @@ export const WorkingHours = ({ week }) => {
         y={contextMenuPosition.y}
         onClose={() => setContextMenuVisible(false)}
         onSelectColor={handleColorSelect}
+        userId={selectedUserForContextMenu}
         colors={pastelColors}
       />
     </>

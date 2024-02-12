@@ -6,10 +6,11 @@ export const ContextMenu = ({
   y,
   onClose,
   onSelectColor,
+  userId,
   colors,
 }) => {
   const handleColorSelect = (color) => {
-    onSelectColor(color);
+    onSelectColor(color, userId); // Pasar el color seleccionado y el ID del usuario
     onClose();
   };
 
