@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { ContextMenu } from "./contextMenu/ContextMenu";
 
 export const WorkingHours = ({ week }) => {
   const { number, users: initialUsers } = week;
-  const [users, setUsers] = useState(initialUsers);
+  const [users, setUsers] = useState(initialUsers || []);
   const [newUserName, setNewUserName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState(new Set());
   const pastelColors = ["#FFD8BE", "#D2E3F0", "#FFD3F2", "#E4FFC1", "#FFECB3"];
-  const [rowColors, setRowColors] = useState({}); // Almacenar los colores de fila para cada usuario
+  const [rowColors, setRowColors] = useState({});
   const [contextMenuVisible, setContextMenuVisible] = useState(false);
   const [contextMenuPosition, setContextMenuPosition] = useState({
     x: 0,
@@ -92,7 +92,6 @@ export const WorkingHours = ({ week }) => {
 
   const handleContextMenu = (event, userId, day) => {
     event.preventDefault();
-    // Verificar si el evento proviene de una celda que contiene las horas
     if (event.target.tagName.toLowerCase() === "textarea") {
       setContextMenuPosition({ x: event.clientX, y: event.clientY });
       setContextMenuVisible(true);
@@ -101,12 +100,11 @@ export const WorkingHours = ({ week }) => {
   };
 
   const handleColorSelect = (color) => {
-    // Actualizar el color de fila para el usuario seleccionado
     setRowColors((prevRowColors) => ({
       ...prevRowColors,
       [selectedUserForContextMenu]: color,
     }));
-    setContextMenuVisible(false); // Cerrar el menú contextual después de seleccionar un color
+    setContextMenuVisible(false);
   };
 
   const handleSelectAll = () => {
@@ -146,7 +144,7 @@ export const WorkingHours = ({ week }) => {
                 onClick={handleClearSchedule}
                 className="text-xl gray-text-2 font-bold hover:gray-text transition-colors duration-150 cursor-pointer"
               >
-                Limpiar usuario
+                Remover usuario
               </a>
             </div>
           </div>
@@ -179,66 +177,71 @@ export const WorkingHours = ({ week }) => {
           </tr>
         </thead>
         <tbody>
-          {users.map((user) => (
-            <tr
-              key={user.id}
-              className="text-center gray-text font-semibold text-lg bg-white"
-            >
-              <td className="flex items-center gap-3 m-2">
-                <input
-                  className={`appearance-none h-6 w-10 rounded-md ${
-                    selectedUsers.has(user.id) ? "bg-blue-500" : "bg-[#D9D9D9]"
-                  } checked:border-transparent focus:outline-none`}
-                  type="checkbox"
-                  checked={selectedUsers.has(user.id)}
-                  onChange={() => handleSelectUser(user.id)}
-                />
-                <div className="flex flex-col flex-grow">
+          {Array.isArray(users) &&
+            users.map((user) => (
+              <tr
+                key={user.id}
+                className="text-center gray-text font-semibold text-lg bg-white"
+              >
+                <td className="flex items-center gap-3 m-2">
                   <input
-                    type="text"
-                    value={user.name}
-                    onChange={(e) => handleNameChange(user.id, e.target.value)}
-                    onBlur={handleSaveToLocal}
-                    className="gray-text font-bold w-full truncate"
-                    style={{ overflow: "hidden", textOverflow: "ellipsis" }}
+                    className={`appearance-none h-6 w-10 rounded-md ${
+                      selectedUsers.has(user.id)
+                        ? "bg-blue-500"
+                        : "bg-[#D9D9D9]"
+                    } checked:border-transparent focus:outline-none`}
+                    type="checkbox"
+                    checked={selectedUsers.has(user.id)}
+                    onChange={() => handleSelectUser(user.id)}
                   />
-                  <p className="text-sm font-normal gray-text text-left">
-                    Horas
-                  </p>
-                </div>
-              </td>
-              {Object.keys(user.schedule).map((day) => (
-                <td
-                  key={day}
-                  className={`border-t-8`}
-                  style={{
-                    backgroundColor: rowColors[user.id] || "#D2E3F0",
-                    borderTop: rowColors[user.id] || "#D2E3F0",
-                  }}
-                  onContextMenu={(event) =>
-                    handleContextMenu(event, user.id, day)
-                  }
-                >
-                  <textarea
-                    value={user.schedule[day]}
-                    onChange={(e) =>
-                      handleScheduleChange(user.id, day, e.target.value)
-                    }
-                    className={`border-none text-center w-full resize-none`}
-                    style={{
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      lineHeight: "1.5",
-                      height: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      backgroundColor: rowColors[user.id] || "#D2E3F0", // Aplicar el color almacenado en el estado rowColors
-                    }}
-                  />
+                  <div className="flex flex-col flex-grow">
+                    <input
+                      type="text"
+                      value={user.name}
+                      onChange={(e) =>
+                        handleNameChange(user.id, e.target.value)
+                      }
+                      onBlur={handleSaveToLocal}
+                      className="gray-text font-bold w-full truncate"
+                      style={{ overflow: "hidden", textOverflow: "ellipsis" }}
+                    />
+                    <p className="text-sm font-normal gray-text text-left">
+                      Horas
+                    </p>
+                  </div>
                 </td>
-              ))}
-            </tr>
-          ))}
+                {Object.keys(user.schedule).map((day) => (
+                  <td
+                    key={day}
+                    className={`border-t-8`}
+                    style={{
+                      backgroundColor: rowColors[user.id] || "#D2E3F0",
+                      borderTop: rowColors[user.id] || "#D2E3F0",
+                    }}
+                    onContextMenu={(event) =>
+                      handleContextMenu(event, user.id, day)
+                    }
+                  >
+                    <textarea
+                      value={user.schedule[day]}
+                      onChange={(e) =>
+                        handleScheduleChange(user.id, day, e.target.value)
+                      }
+                      className={`border-none text-center w-full resize-none`}
+                      style={{
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        lineHeight: "1.5",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        backgroundColor: rowColors[user.id] || "#D2E3F0",
+                      }}
+                    />
+                  </td>
+                ))}
+              </tr>
+            ))}
         </tbody>
       </table>
 
