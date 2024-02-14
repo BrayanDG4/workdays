@@ -1,4 +1,8 @@
-export const ToolBar = () => {
+export const ToolBar = ({ downloadPDF }) => {
+  const handleExportClick = (e) => {
+    e.preventDefault(); // Evita la recarga de la página
+    downloadPDF(); // Llama a la función downloadPDF pasada como prop
+  };
   return (
     <div className="py-4 px-4 flex justify-center items-center space-between bg-white">
       <div className="ml-2">
@@ -8,15 +12,10 @@ export const ToolBar = () => {
       </div>
 
       <nav className="md:flex gap-4 md:items-center font-semibold gray-text text-xl">
-        {/* <a
-          className="text-xl gray-text font-bold hover:gray-text transition-colors duration-150 cursor-pointer"
-          href=""
-        >
-          Donaciones
-        </a> */}
         <a
           className="text-xl gray-text font-bold hover:gray-text-2 transition-colors duration-150 cursor-pointer"
-          href=""
+          href="/"
+          onClick={handleExportClick} // Llama a la función manejadora de clics
         >
           Exportar
         </a>

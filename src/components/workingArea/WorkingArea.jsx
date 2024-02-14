@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { ToolBar } from "./ToolBar";
 import { WorkingHours } from "./WorkingHours";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 export const WorkingArea = () => {
   const [weeks, setWeeks] = useState([]);
@@ -72,42 +74,89 @@ export const WorkingArea = () => {
     localStorage.setItem("userList", JSON.stringify(storedData));
   };
 
+  const downloadPDF = () => {
+    const capture = document.querySelector(".canvas-container");
+
+    // Obtiene las dimensiones del contenedor
+    const containerWidth = capture.offsetWidth;
+    const containerHeight = capture.offsetHeight;
+
+    html2canvas(capture, {
+      width: containerWidth,
+      height: containerHeight,
+    }).then((canvas) => {
+      const imgData = canvas.toDataURL("img/png");
+      const doc = new jsPDF("p", "mm", "a4");
+
+      // Ajusta el tamaño del documento PDF si es necesario para evitar recorte de contenido
+      const docWidth = doc.internal.pageSize.getWidth();
+      const docHeight = doc.internal.pageSize.getHeight();
+
+      // Define el margen deseado alrededor de la imagen
+      const margin = 10; // Puedes ajustar este valor según tus necesidades
+
+      // Calcula el factor de escala para ajustar el tamaño de la imagen en el PDF
+      const scale = Math.min((docWidth - margin * 2) / containerWidth, 1); // Escala solo el ancho
+
+      // Calcula el ancho y alto de la imagen considerando el margen
+      const imgWidth = containerWidth * scale;
+      const imgHeight = containerHeight * scale;
+
+      // Calcula la posición horizontal y vertical de la imagen
+      const xPos = (docWidth - imgWidth) / 2;
+      const yPos = margin;
+
+      // Si la imagen excede la altura de la página, agrega una nueva página
+      if (imgHeight > docHeight - margin * 2) {
+        doc.addPage();
+      }
+
+      // Agrega la imagen al PDF con el margen
+      doc.addImage(imgData, "PNG", xPos, yPos, imgWidth, imgHeight);
+      doc.save("WorkDays-horario.pdf");
+    });
+  };
+
   return (
     <>
-      <ToolBar />
+      <ToolBar downloadPDF={downloadPDF} />
       <section className="h-full w-full">
         <div className="h-screen">
           <div className="container mx-auto px-2 pt-8">
-            <div className="mb-1">
-              <h2 className="text-4xl font-bold gray-text mb-2">Actividades</h2>
-              <div className="text-2xl gray-text-2 font-bold">
-                <p>0 seleccionados</p>
+            <div className="canvas-container">
+              <div className="mb-1">
+                <h2 className="text-4xl font-bold gray-text mb-2">
+                  Actividades
+                </h2>
+                <div className="text-2xl gray-text-2 font-bold">
+                  <p>0 seleccionados</p>
+                </div>
               </div>
-            </div>
 
-            {weeks.map((week) => (
-              <div className="mb-4" key={week.number}>
-                <WorkingHours week={week} />
-              </div>
-            ))}
+              {weeks.map((week) => (
+                <div className="mb-4" key={week.number}>
+                  <WorkingHours week={week} />
+                </div>
+              ))}
 
-            <div className="flex justify-center items-center gap-4 mb-2">
-              <button
-                className="text-xl gray-text-2 font-bold hover:gray-text transition-colors duration-150 cursor-pointer"
-                onClick={handleAddWeek}
-              >
-                Agregar semana
-              </button>
-              {weeks.length > 1 && (
+              <div className="flex justify-center items-center gap-4 mb-2">
                 <button
-                  onClick={() =>
-                    handleDeleteWeek(weeks[weeks.length - 1].number)
-                  }
                   className="text-xl gray-text-2 font-bold hover:gray-text transition-colors duration-150 cursor-pointer"
+                  onClick={handleAddWeek}
                 >
-                  Eliminar semana
+                  Agregar semana
                 </button>
-              )}
+                {weeks.length > 1 && (
+                  <button
+                    onClick={() =>
+                      handleDeleteWeek(weeks[weeks.length - 1].number)
+                    }
+                    className="text-xl gray-text-2 font-bold hover:gray-text transition-colors duration-150 cursor-pointer"
+                  >
+                    Eliminar semana
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
