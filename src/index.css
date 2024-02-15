@@ -22,19 +22,4 @@
   .gray-text-2 {
     color: #989898;
   }
-
-  .textarea-container {
-    width: 100%;
-  }
-
-  .textarea-container textarea {
-    width: 100%;
-    height: auto; /* Permite que el textarea se ajuste automáticamente en función del contenido */
-    min-height: 50px; /* Altura mínima del textarea */
-    font-size: 16px; /* Tamaño de fuente adecuado */
-    padding: 8px; /* Ajusta el relleno según sea necesario */
-    box-sizing: border-box; /* Incluye el relleno y el borde en el tamaño total */
-    resize: vertical; /* Permite que el textarea sea redimensionable verticalmente */
-    border: 1px solid #ccc; /* Añade un borde para claridad visual */
-  }
 }

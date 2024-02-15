@@ -232,10 +232,10 @@ export const WorkingHours = ({ week }) => {
                         onChange={(e) =>
                           handleScheduleChange(user.id, day, e.target.value)
                         }
-                        className={`border-none text-center w-full resize-none`}
+                        className={`border-none text-center w-full resize-none text-[16px] md:text-[15px]`}
                         style={{
                           overflow: "hidden",
-                          lineHeight: "1.5",
+                          lineHeight: "1.2",
                           display: "flex",
                           alignItems: "center",
                           backgroundColor: rowColors[user.id] || "#D2E3F0",

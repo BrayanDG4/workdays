@@ -84,9 +84,13 @@ export const WorkingArea = () => {
     html2canvas(capture, {
       width: containerWidth,
       height: containerHeight,
+      scale: window.devicePixelRatio, // Escala para dispositivos con pantalla de alta densidad
+      quality: 1,
     }).then((canvas) => {
-      const imgData = canvas.toDataURL("img/png");
-      const doc = new jsPDF("p", "mm", "a4");
+      const imgData = canvas.toDataURL("image/jpeg", 1.0); // Utiliza JPEG para reducir el tamaño del archivo
+
+      // Define el ancho y alto del documento PDF con orientación horizontal (landscape)
+      const doc = new jsPDF("l", "mm", [297, 210]); // Ancho: 297mm, Alto: 210mm
 
       // Ajusta el tamaño del documento PDF si es necesario para evitar recorte de contenido
       const docWidth = doc.internal.pageSize.getWidth();
@@ -112,7 +116,16 @@ export const WorkingArea = () => {
       }
 
       // Agrega la imagen al PDF con el margen
-      doc.addImage(imgData, "PNG", xPos, yPos, imgWidth, imgHeight);
+      doc.addImage(
+        imgData,
+        "JPEG",
+        xPos,
+        yPos,
+        imgWidth,
+        imgHeight,
+        null,
+        "FAST"
+      ); // Utiliza 'FAST' para reducir la calidad del PDF
       doc.save("WorkDays-horario.pdf");
     });
   };
