@@ -30,14 +30,35 @@ export const WorkingHours = ({ week }) => {
     localStorage.setItem("userList", JSON.stringify(fullUserList));
   }, [fullUserList]);
 
-  const handleScheduleChange = useCallback((userId, day, value) => {
-    setUsers((prevUsers) =>
-      prevUsers.map((user) =>
-        user.id === userId
-          ? { ...user, schedule: { ...user.schedule, [day]: value } }
-          : user
-      )
-    );
+  const handleScheduleChange = useCallback(
+    (userId, day, startTime, endTime) => {
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === userId
+            ? {
+                ...user,
+                schedule: {
+                  ...user.schedule,
+                  [day]: { start: startTime, end: endTime },
+                },
+              }
+            : user
+        )
+      );
+    },
+    []
+  );
+
+  const calculateTotalHours = useCallback((userSchedule) => {
+    let totalHours = 0;
+    Object.values(userSchedule).forEach((daySchedule) => {
+      if (daySchedule.start && daySchedule.end) {
+        const startTime = parseInt(daySchedule.start.split(":")[0]);
+        const endTime = parseInt(daySchedule.end.split(":")[0]);
+        totalHours += endTime - startTime;
+      }
+    });
+    return totalHours;
   }, []);
 
   const handleNameChange = useCallback((userId, value) => {
@@ -57,13 +78,13 @@ export const WorkingHours = ({ week }) => {
       id: uuidv4(),
       name: newUserName.trim() || `Usuario ${users.length + 1}`,
       schedule: {
-        Monday: "",
-        Tuesday: "",
-        Wednesday: "",
-        Thursday: "",
-        Friday: "",
-        Saturday: "",
-        Sunday: "",
+        Monday: { start: "", end: "" },
+        Tuesday: { start: "", end: "" },
+        Wednesday: { start: "", end: "" },
+        Thursday: { start: "", end: "" },
+        Friday: { start: "", end: "" },
+        Saturday: { start: "", end: "" },
+        Sunday: { start: "", end: "" },
       },
     };
 
@@ -93,7 +114,10 @@ export const WorkingHours = ({ week }) => {
 
   const handleContextMenu = useCallback((event, userId, day) => {
     event.preventDefault();
-    if (event.target.tagName.toLowerCase() === "textarea") {
+    if (
+      event.target.tagName.toLowerCase() === "input" &&
+      event.target.type === "time"
+    ) {
       setContextMenuPosition({ x: event.clientX, y: event.clientY });
       setContextMenuVisible(true);
       setSelectedUserForContextMenu(userId);
@@ -106,6 +130,21 @@ export const WorkingHours = ({ week }) => {
         ...prevRowColors,
         [selectedUserForContextMenu]: color,
       }));
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === selectedUserForContextMenu
+            ? {
+                ...user,
+                schedule: Object.fromEntries(
+                  Object.entries(user.schedule).map(([day, value]) => [
+                    day,
+                    { ...value, color: color },
+                  ])
+                ),
+              }
+            : user
+        )
+      );
       setContextMenuVisible(false);
     },
     [selectedUserForContextMenu]
@@ -130,11 +169,11 @@ export const WorkingHours = ({ week }) => {
 
   return (
     <>
-      <div className="canvas-container">
+      <div className="">
         <div className="flex justify-between flex-wrap">
           <div className="w-full md:w-1/5"></div>
           <div className="w-full md:w-4/5">
-            <div className="flex justify-between items-center">
+            <div className="flex justify-between items-center mb-1">
               <h3 className="text-3xl font-bold gray-text mb-2">
                 Semana {number}
               </h3>
@@ -160,7 +199,7 @@ export const WorkingHours = ({ week }) => {
           <table className="w-full">
             <thead>
               <tr className="text-center text-xl gray-text bg-white">
-                <th className="bg-[#EDF3EF] w-1/6 md:w-1/7">
+                <th className="bg-[#EDF3EF] w-[15%] md:w-[16%] lg:w-[15%]">
                   <div className="flex items-center gap-3 m-2">
                     <input
                       className={`appearance-none h-6 w-6 bg-[#D9D9D9] rounded-md checked:bg-blue-500 checked:border-transparent focus:outline-none`}
@@ -191,9 +230,9 @@ export const WorkingHours = ({ week }) => {
                     key={user.id}
                     className="text-center gray-text font-semibold text-lg bg-white"
                   >
-                    <td className="flex items-center gap-3 m-2">
+                    <td className="flex items-center gap-3 m-2 h-full">
                       <input
-                        className={`appearance-none h-6 w-10 rounded-md ${
+                        className={`appearance-none h-6 w-[34px] rounded-md ${
                           selectedUsers.has(user.id)
                             ? "bg-blue-500"
                             : "bg-[#D9D9D9]"
@@ -210,17 +249,18 @@ export const WorkingHours = ({ week }) => {
                             handleNameChange(user.id, e.target.value)
                           }
                           onBlur={handleSaveToLocal}
-                          className="gray-text font-bold w-full truncate"
+                          className="gray-text font-bold w-full h-[46px] mb-1 border-none"
                           style={{
                             overflow: "hidden",
                             textOverflow: "ellipsis",
                           }}
                         />
                         <p className="text-sm font-normal gray-text text-left">
-                          Horas
+                          Horas semanales: {calculateTotalHours(user.schedule)}
                         </p>
                       </div>
                     </td>
+
                     {Object.keys(user.schedule).map((day) => (
                       <td
                         key={day}
@@ -233,20 +273,47 @@ export const WorkingHours = ({ week }) => {
                           handleContextMenu(event, user.id, day)
                         }
                       >
-                        <textarea
-                          value={user.schedule[day]}
-                          onChange={(e) =>
-                            handleScheduleChange(user.id, day, e.target.value)
-                          }
-                          className={`border-none text-center w-full resize-none text-[16px] md:text-[15px]`}
-                          style={{
-                            overflow: "hidden",
-                            lineHeight: "1.2",
-                            display: "flex",
-                            alignItems: "center",
-                            backgroundColor: rowColors[user.id] || "#D2E3F0",
-                          }}
-                        />
+                        <div className="flex flex-col pb-2">
+                          <input
+                            type="time"
+                            value={user.schedule[day].start}
+                            onChange={(e) =>
+                              handleScheduleChange(
+                                user.id,
+                                day,
+                                e.target.value,
+                                user.schedule[day].end
+                              )
+                            }
+                            className="border-none text-center w-full h-[46px] resize-none text-[16px] md:text-[16px]"
+                            style={{
+                              overflow: "hidden",
+                              display: "flex",
+                              alignItems: "center",
+                              backgroundColor: rowColors[user.id] || "#D2E3F0",
+                            }}
+                          />
+                          <span>-</span>
+                          <input
+                            type="time"
+                            value={user.schedule[day].end}
+                            onChange={(e) =>
+                              handleScheduleChange(
+                                user.id,
+                                day,
+                                user.schedule[day].start,
+                                e.target.value
+                              )
+                            }
+                            className="border-none text-center w-full h-[46px] resize-none text-[16px] md:text-[16px]"
+                            style={{
+                              overflow: "hidden",
+                              display: "flex",
+                              alignItems: "center",
+                              backgroundColor: rowColors[user.id] || "#D2E3F0",
+                            }}
+                          />
+                        </div>
                       </td>
                     ))}
                   </tr>

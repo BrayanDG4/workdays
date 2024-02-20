@@ -124,7 +124,6 @@ export const WorkingArea = () => {
         imgWidth,
         imgHeight,
         null,
-        "FAST"
       ); // Utiliza 'FAST' para reducir la calidad del PDF
       doc.save("WorkDays-horario.pdf");
     });
@@ -137,13 +136,13 @@ export const WorkingArea = () => {
         <div className="h-screen">
           <div className="container mx-auto px-2 pt-8">
             <div className="canvas-container">
-              <div className="mb-1">
+              <div className="mb-6">
                 <h2 className="text-4xl font-bold gray-text mb-2">
-                  Actividades
+                  Horarios semanales
                 </h2>
-                <div className="text-2xl gray-text-2 font-bold">
-                  <p>0 seleccionados</p>
-                </div>
+                {/* <div className="text-2xl gray-text-2 font-bold">
+                  <p>Diseña horarios laborales, añade color y comparte.</p>
+                </div> */}
               </div>
 
               {weeks.map((week) => (
